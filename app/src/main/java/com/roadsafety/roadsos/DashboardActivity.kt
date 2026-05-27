@@ -39,9 +39,18 @@ class DashboardActivity : AppCompatActivity() {
     private val accidentReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val sosIntent = Intent(this@DashboardActivity, SOSActivity::class.java).apply {
-                putExtra(AccidentBroadcaster.EXTRA_LATITUDE, intent.getDoubleExtra(AccidentBroadcaster.EXTRA_LATITUDE, 0.0))
-                putExtra(AccidentBroadcaster.EXTRA_LONGITUDE, intent.getDoubleExtra(AccidentBroadcaster.EXTRA_LONGITUDE, 0.0))
-                putExtra(AccidentBroadcaster.EXTRA_G_FORCE, intent.getFloatExtra(AccidentBroadcaster.EXTRA_G_FORCE, 0f))
+                putExtra(
+                    AccidentBroadcaster.EXTRA_LATITUDE,
+                    intent.getDoubleExtra(AccidentBroadcaster.EXTRA_LATITUDE, 0.0)
+                )
+                putExtra(
+                    AccidentBroadcaster.EXTRA_LONGITUDE,
+                    intent.getDoubleExtra(AccidentBroadcaster.EXTRA_LONGITUDE, 0.0)
+                )
+                putExtra(
+                    AccidentBroadcaster.EXTRA_G_FORCE,
+                    intent.getFloatExtra(AccidentBroadcaster.EXTRA_G_FORCE, 0f)
+                )
             }
             startActivity(sosIntent)
         }
@@ -98,7 +107,19 @@ class DashboardActivity : AppCompatActivity() {
         }
 
         hospitalsCard.setOnClickListener {
-            Toast.makeText(this, "Hospitals - Coming Soon", Toast.LENGTH_SHORT).show()
+
+            val intent =
+                Intent(
+                    this,
+                    EmergencyMapActivity::class.java
+                )
+
+            intent.putExtra(
+                "mode",
+                "emergency"
+            )
+
+            startActivity(intent)
         }
 
         historyCard.setOnClickListener {
@@ -112,14 +133,30 @@ class DashboardActivity : AppCompatActivity() {
                     startActivity(Intent(this, ContactsActivity::class.java))
                     true
                 }
+
                 R.id.nav_map -> {
-                    Toast.makeText(this, "Map", Toast.LENGTH_SHORT).show()
+
+                    val intent =
+                        Intent(
+                            this,
+                            EmergencyMapActivity::class.java
+                        )
+
+                    intent.putExtra(
+                        "mode",
+                        "emergency"
+                    )
+
+                    startActivity(intent)
+
                     true
                 }
+
                 R.id.nav_history -> {
                     startActivity(Intent(this, HistoryActivity::class.java))
                     true
                 }
+
                 else -> false
             }
         }
@@ -140,7 +177,8 @@ class DashboardActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun requestLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            == PackageManager.PERMISSION_GRANTED) {
+            == PackageManager.PERMISSION_GRANTED
+        ) {
             startServices()
         } else {
             ActivityCompat.requestPermissions(
@@ -154,6 +192,23 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
+    private fun requestSmsPermission() {
+        if (
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.SEND_SMS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.SEND_SMS
+                ),
+                101
+            )
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -161,18 +216,38 @@ class DashboardActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
         if (requestCode == LOCATION_PERMISSION_REQUEST) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            if (
+                grantResults.isNotEmpty() &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED
+            ) {
+
                 startServices()
+
+                requestSmsPermission()
+
             } else {
-                Toast.makeText(this, "Location permission required for accident detection", Toast.LENGTH_LONG).show()
+
+                Toast.makeText(
+                    this,
+                    "Location permission required for accident detection",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun startServices() {
-        startForegroundService(Intent(this, SensorService::class.java))
-        startForegroundService(Intent(this, LocationService::class.java))
+
+        startForegroundService(
+            Intent(this, SensorService::class.java)
+        )
+
+        startForegroundService(
+            Intent(this, LocationService::class.java)
+        )
     }
 }

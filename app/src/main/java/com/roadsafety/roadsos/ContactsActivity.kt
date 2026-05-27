@@ -12,13 +12,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
+import com.roadsafety.roadsos.ContactManager
 
 class ContactsActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var emptyState: LinearLayout
     private lateinit var adapter: ContactsAdapter
-    private val contactList = mutableListOf<Contact>()
+    private var contactList =
+        mutableListOf<Contact>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +31,9 @@ class ContactsActivity : AppCompatActivity() {
         emptyState = findViewById(R.id.emptyState)
 
         // Setup RecyclerView
+        contactList.addAll(
+            ContactManager.getContacts(this)
+        )
         adapter = ContactsAdapter(contactList) { contact, position ->
             showDeleteDialog(contact, position)
         }
@@ -72,6 +77,10 @@ class ContactsActivity : AppCompatActivity() {
                     relation = relation.ifEmpty { "Contact" }
                 )
                 adapter.addContact(contact)
+                ContactManager.saveContact(
+                    this,
+                    contact
+                )
                 updateEmptyState()
                 Toast.makeText(this, "${name} added", Toast.LENGTH_SHORT).show()
             }
@@ -85,6 +94,10 @@ class ContactsActivity : AppCompatActivity() {
             .setMessage("Remove ${contact.name} from emergency contacts?")
             .setPositiveButton("REMOVE") { _, _ ->
                 adapter.removeContact(position)
+                ContactManager.removeContact(
+                    this,
+                    contact.id
+                )
                 updateEmptyState()
                 Toast.makeText(this, "Contact removed", Toast.LENGTH_SHORT).show()
             }

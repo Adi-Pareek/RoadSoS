@@ -1,5 +1,6 @@
 package com.roadsafety.roadsos
 
+
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -16,6 +17,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.google.android.material.button.MaterialButton
 import com.roadsafety.roadsos.detection.AccidentBroadcaster
+import android.telephony.SmsManager
+import com.roadsafety.roadsos.ContactManager
 
 class SOSActivity : AppCompatActivity() {
 
@@ -51,6 +54,7 @@ class SOSActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sos)
         supportActionBar?.hide()
+
 
         // Connect UI
         countdownNumber = findViewById(R.id.countdownNumber)
@@ -145,22 +149,97 @@ class SOSActivity : AppCompatActivity() {
     }
 
     private fun activateEmergency() {
+
         isEmergencyActive = true
+
         emergencyOverlay.visibility = View.VISIBLE
 
+        if (
+            crashLat == 0.0 ||
+            crashLng == 0.0
+        ) {
+
+            Toast.makeText(
+                this,
+                "Waiting for live location...",
+                Toast.LENGTH_LONG
+            ).show()
+
+            smsStatus.text =
+                " 📍Getting live location..."
+
+            return
+        }
+
+        val message =
+
+            "EMERGENCY ALERT\n\n" +
+                    "Possible accident detected.\n\n" +
+                    "Live Location:\n" +
+                    "https://maps.google.com/?q=$crashLat,$crashLng"
+
+        try {
+
+            val contacts =
+                ContactManager.getContacts(this)
+
+            if (contacts.isEmpty()) {
+
+                smsStatus.text =
+                    "❌ No emergency contacts"
+
+                Toast.makeText(
+                    this,
+                    "Add emergency contacts first",
+                    Toast.LENGTH_LONG
+                ).show()
+
+                return
+            }
+
+            val smsManager =
+                SmsManager.getDefault()
+
+            for (contact in contacts) {
+
+                smsManager.sendTextMessage(
+                    contact.phone,
+                    null,
+                    message,
+                    null,
+                    null
+                )
+            }
+
+            smsStatus.text =
+                "✅ SMS sent to ${contacts.size} contacts"
+
+        } catch (e: Exception) {
+
+            smsStatus.text =
+                "❌ SMS failed"
+
+            Toast.makeText(
+                this,
+                e.message,
+                Toast.LENGTH_LONG
+            ).show()
+        }
+
         android.os.Handler(mainLooper).postDelayed({
-            smsStatus.text = "✅ SMS sent to contacts"
+
+            locationStatus.text =
+                "✅ Live location shared"
+
         }, 1500)
 
         android.os.Handler(mainLooper).postDelayed({
-            locationStatus.text = "✅ Live location shared"
+
+            alertStatus.text =
+                "✅ Emergency services notified"
+
         }, 2500)
-
-        android.os.Handler(mainLooper).postDelayed({
-            alertStatus.text = "✅ Emergency services notified"
-        }, 3500)
     }
-
     override fun onDestroy() {
         super.onDestroy()
         countDownTimer?.cancel()
