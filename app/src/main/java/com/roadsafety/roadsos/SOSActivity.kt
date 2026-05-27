@@ -1,6 +1,9 @@
 package com.roadsafety.roadsos
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -12,6 +15,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.google.android.material.button.MaterialButton
+import com.roadsafety.roadsos.detection.AccidentBroadcaster
 
 class SOSActivity : AppCompatActivity() {
 
@@ -28,6 +32,20 @@ class SOSActivity : AppCompatActivity() {
 
     private var countDownTimer: CountDownTimer? = null
     private var isEmergencyActive = false
+    private var crashLat = 0.0
+    private var crashLng = 0.0
+    private var crashGForce = 0f
+
+    private val accidentReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            crashLat = intent.getDoubleExtra(AccidentBroadcaster.EXTRA_LATITUDE, 0.0)
+            crashLng = intent.getDoubleExtra(AccidentBroadcaster.EXTRA_LONGITUDE, 0.0)
+            crashGForce = intent.getFloatExtra(AccidentBroadcaster.EXTRA_G_FORCE, 0f)
+            // Restart countdown with crash data
+            countDownTimer?.cancel()
+            startCountdown()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +64,11 @@ class SOSActivity : AppCompatActivity() {
         locationStatus = findViewById(R.id.locationStatus)
         alertStatus = findViewById(R.id.alertStatus)
 
+        // Get crash data if launched from broadcast
+        crashLat = intent.getDoubleExtra(AccidentBroadcaster.EXTRA_LATITUDE, 0.0)
+        crashLng = intent.getDoubleExtra(AccidentBroadcaster.EXTRA_LONGITUDE, 0.0)
+        crashGForce = intent.getFloatExtra(AccidentBroadcaster.EXTRA_G_FORCE, 0f)
+
         // Back button
         findViewById<TextView>(R.id.backButton).setOnClickListener {
             if (!isEmergencyActive) {
@@ -54,21 +77,21 @@ class SOSActivity : AppCompatActivity() {
             }
         }
 
-        // Start pulse animation on countdown circle
+        // Pulse animation
         val pulseAnim = AnimationUtils.loadAnimation(this, R.anim.pulse)
         countdownCard.startAnimation(pulseAnim)
 
         // Start countdown
         startCountdown()
 
-        // I'm Safe button
+        // I'm Safe
         safButton.setOnClickListener {
             countDownTimer?.cancel()
             Toast.makeText(this, "Glad you're safe! Monitoring continues.", Toast.LENGTH_LONG).show()
             finish()
         }
 
-        // Need Help button
+        // Need Help
         helpButton.setOnClickListener {
             countDownTimer?.cancel()
             activateEmergency()
@@ -89,13 +112,22 @@ class SOSActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        val filter = IntentFilter(AccidentBroadcaster.ACTION_ACCIDENT_DETECTED)
+        registerReceiver(accidentReceiver, filter, RECEIVER_NOT_EXPORTED)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(accidentReceiver)
+    }
+
     private fun startCountdown() {
         countDownTimer = object : CountDownTimer(30000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val secondsLeft = millisUntilFinished / 1000
                 countdownNumber.text = secondsLeft.toString()
-
-                // Turn more red as countdown progresses
                 when {
                     secondsLeft <= 10 -> countdownCard.setCardBackgroundColor(
                         getColor(R.color.emergency_red_dark)
@@ -107,7 +139,6 @@ class SOSActivity : AppCompatActivity() {
             }
 
             override fun onFinish() {
-                // Auto activate emergency if no response
                 activateEmergency()
             }
         }.start()
@@ -117,8 +148,6 @@ class SOSActivity : AppCompatActivity() {
         isEmergencyActive = true
         emergencyOverlay.visibility = View.VISIBLE
 
-        // Simulate sending alerts with delays
-        // Raj and Alok will connect real SMS and location here
         android.os.Handler(mainLooper).postDelayed({
             smsStatus.text = "✅ SMS sent to contacts"
         }, 1500)
