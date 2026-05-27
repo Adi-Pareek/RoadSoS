@@ -9,11 +9,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
 
 
     <application
@@ -29,7 +33,11 @@
         <activity android:name=".SettingsActivity" android:exported="false" />
         <activity android:name=".HistoryActivity" android:exported="false" />
         <activity android:name=".RegisterActivity" android:exported="false" />
-        <activity android:name=".SOSActivity" android:exported="false" />
+        <activity
+            android:name=".SOSActivity"
+            android:exported="true"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
         <activity android:name=".ContactsActivity" android:exported="false" />
         <activity android:name=".DashboardActivity" android:exported="false" />
         <activity android:name=".LoginActivity" android:exported="false" />
@@ -45,7 +53,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Your sensor services -->
         <service
             android:name=".service.SensorService"
             android:foregroundServiceType="dataSync"
@@ -55,6 +62,14 @@
             android:name=".service.LocationService"
             android:foregroundServiceType="location"
             android:exported="false" />
+
+        <receiver
+            android:name=".receivers.AccidentReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.roadsafety.roadsos.ACCIDENT_DETECTED"/>
+            </intent-filter>
+        </receiver>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

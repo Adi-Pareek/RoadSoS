@@ -1,7 +1,9 @@
 package com.roadsafety.roadsos.detection
+
 import android.content.Context
+import android.os.Build
 import android.util.Log
-import com.roadsafety.roadsos.detection.AccidentBroadcaster
+import androidx.annotation.RequiresApi
 
 class AccidentDetector(
     private val context: Context,
@@ -14,7 +16,8 @@ class AccidentDetector(
         const val MIN_SPEED_FOR_DETECTION = 15f
         const val CONFIRMATION_WINDOW_MS = 2000L
         const val FREEFALL_THRESHOLD_G = 0.5f
-        const val COOLDOWN_MS = 3000L
+        const val COOLDOWN_MS = 10000L
+        const val GYRO_THRESHOLD = 3.0f
     }
 
     private var lastSpeed = 0f
@@ -23,8 +26,9 @@ class AccidentDetector(
     private var lastEventTime = 0L
     private var isFiring = false
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @Synchronized
-    fun onSensorUpdate(gForce: Float, speed: Float, lat: Double, lng: Double) {
+    fun onSensorUpdate(gForce: Float, gyroMagnitude: Float, speed: Float, lat: Double, lng: Double) {
         val now = System.currentTimeMillis()
 
         if (isFiring) return
@@ -57,14 +61,14 @@ class AccidentDetector(
 
             gForce > IMPACT_THRESHOLD_G && lastSpeed > MIN_SPEED_FOR_DETECTION -> {
                 impactTime = now
-                Log.d("ACCIDENT", "⚠️ Impact! G-Force: $gForce")
+                Log.d("ACCIDENT", "⚠️ Impact! G-Force: $gForce Gyro: $gyroMagnitude")
             }
 
-            isRecentImpact && isSuddenStop -> {
+            isRecentImpact && (isSuddenStop || gyroMagnitude > GYRO_THRESHOLD) -> {
                 isFiring = true
                 impactTime = 0L
                 lastEventTime = now
-                Log.d("ACCIDENT", "🚨 Crash detected! G-Force: $gForce")
+                Log.d("ACCIDENT", "🚨 Crash! G-Force: $gForce Gyro: $gyroMagnitude")
                 val crashEvent = CrashEvent(now, gForce, lat, lng, speed)
                 AccidentBroadcaster.broadcast(context, crashEvent)
                 onAccidentDetected(crashEvent)

@@ -49,7 +49,9 @@ class LocationService : Service() {
         startLocationUpdates()
         Log.d("LOCATION", "LocationService started ✅")
     }
-
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_STICKY
+    }
     private fun startLocationUpdates() {
         val request = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY, 1000L

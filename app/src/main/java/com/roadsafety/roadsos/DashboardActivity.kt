@@ -35,22 +35,15 @@ class DashboardActivity : AppCompatActivity() {
 
     private val LOCATION_PERMISSION_REQUEST = 100
 
-    // Broadcast receiver for accident detection
     private val accidentReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val sosIntent = Intent(this@DashboardActivity, SOSActivity::class.java).apply {
-                putExtra(
-                    AccidentBroadcaster.EXTRA_LATITUDE,
-                    intent.getDoubleExtra(AccidentBroadcaster.EXTRA_LATITUDE, 0.0)
-                )
-                putExtra(
-                    AccidentBroadcaster.EXTRA_LONGITUDE,
-                    intent.getDoubleExtra(AccidentBroadcaster.EXTRA_LONGITUDE, 0.0)
-                )
-                putExtra(
-                    AccidentBroadcaster.EXTRA_G_FORCE,
-                    intent.getFloatExtra(AccidentBroadcaster.EXTRA_G_FORCE, 0f)
-                )
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                putExtra(AccidentBroadcaster.EXTRA_LATITUDE, intent.getDoubleExtra(AccidentBroadcaster.EXTRA_LATITUDE, 0.0))
+                putExtra(AccidentBroadcaster.EXTRA_LONGITUDE, intent.getDoubleExtra(AccidentBroadcaster.EXTRA_LONGITUDE, 0.0))
+                putExtra(AccidentBroadcaster.EXTRA_G_FORCE, intent.getFloatExtra(AccidentBroadcaster.EXTRA_G_FORCE, 0f))
             }
             startActivity(sosIntent)
         }
@@ -62,7 +55,10 @@ class DashboardActivity : AppCompatActivity() {
         setContentView(R.layout.activity_dashboard)
         supportActionBar?.hide()
 
-        // Connect UI
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 102)
+        }
+
         sosButton = findViewById(R.id.sosButton)
         monitoringSwitch = findViewById(R.id.monitoringSwitch)
         monitoringStatus = findViewById(R.id.monitoringStatus)
@@ -76,6 +72,9 @@ class DashboardActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.profileIcon).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
+
+        val filter = IntentFilter(AccidentBroadcaster.ACTION_ACCIDENT_DETECTED)
+        registerReceiver(accidentReceiver, filter, RECEIVER_NOT_EXPORTED)
 
         requestLocationPermission()
 
@@ -107,19 +106,9 @@ class DashboardActivity : AppCompatActivity() {
         }
 
         hospitalsCard.setOnClickListener {
-
-            val intent =
-                Intent(
-                    this,
-                    EmergencyMapActivity::class.java
-                )
-
-            intent.putExtra(
-                "mode",
-                "emergency"
-            )
-
-            startActivity(intent)
+            startActivity(Intent(this, EmergencyMapActivity::class.java).apply {
+                putExtra("mode", "emergency")
+            })
         }
 
         historyCard.setOnClickListener {
@@ -133,121 +122,79 @@ class DashboardActivity : AppCompatActivity() {
                     startActivity(Intent(this, ContactsActivity::class.java))
                     true
                 }
-
                 R.id.nav_map -> {
-
-                    val intent =
-                        Intent(
-                            this,
-                            EmergencyMapActivity::class.java
-                        )
-
-                    intent.putExtra(
-                        "mode",
-                        "emergency"
-                    )
-
-                    startActivity(intent)
-
+                    startActivity(Intent(this, EmergencyMapActivity::class.java).apply {
+                        putExtra("mode", "emergency")
+                    })
                     true
                 }
-
                 R.id.nav_history -> {
                     startActivity(Intent(this, HistoryActivity::class.java))
                     true
                 }
-
                 else -> false
             }
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    override fun onResume() {
-        super.onResume()
-        val filter = IntentFilter(AccidentBroadcaster.ACTION_ACCIDENT_DETECTED)
-        registerReceiver(accidentReceiver, filter, RECEIVER_NOT_EXPORTED)
-    }
-
-    override fun onPause() {
-        super.onPause()
+    override fun onDestroy() {
+        super.onDestroy()
         unregisterReceiver(accidentReceiver)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun requestLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            == PackageManager.PERMISSION_GRANTED
-        ) {
+            == PackageManager.PERMISSION_GRANTED) {
+            requestBackgroundLocation()
             startServices()
         } else {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
                 LOCATION_PERMISSION_REQUEST
             )
         }
     }
 
-    private fun requestSmsPermission() {
-        if (
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.SEND_SMS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(
-                    Manifest.permission.SEND_SMS
-                ),
-                101
-            )
+    private fun requestBackgroundLocation() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION), 101)
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    private fun requestSmsPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.SEND_SMS), 103)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (requestCode == LOCATION_PERMISSION_REQUEST) {
-
-            if (
-                grantResults.isNotEmpty() &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED
-            ) {
-
-                startServices()
-
-                requestSmsPermission()
-
-            } else {
-
-                Toast.makeText(
-                    this,
-                    "Location permission required for accident detection",
-                    Toast.LENGTH_LONG
-                ).show()
+        when (requestCode) {
+            LOCATION_PERMISSION_REQUEST -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    requestBackgroundLocation()
+                    startServices()
+                    requestSmsPermission()
+                } else {
+                    Toast.makeText(this, "Location permission required for accident detection", Toast.LENGTH_LONG).show()
+                }
+            }
+            101 -> {
+                val msg = if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    "24/7 monitoring enabled!" else "Background location denied. Keep app open for monitoring."
+                Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
             }
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun startServices() {
-
-        startForegroundService(
-            Intent(this, SensorService::class.java)
-        )
-
-        startForegroundService(
-            Intent(this, LocationService::class.java)
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(Intent(this, SensorService::class.java))
+            startForegroundService(Intent(this, LocationService::class.java))
+        }
     }
 }

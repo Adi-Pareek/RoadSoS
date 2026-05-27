@@ -1,12 +1,16 @@
 package com.roadsafety.roadsos
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import com.roadsafety.roadsos.service.LocationService
+import com.roadsafety.roadsos.service.SensorService
 
 class LoginActivity : AppCompatActivity() {
 
@@ -52,7 +56,10 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun goToDashboard() {
+        startForegroundService(Intent(this, SensorService::class.java))
+        startForegroundService(Intent(this, LocationService::class.java))
         startActivity(Intent(this, DashboardActivity::class.java))
         finish()
     }
