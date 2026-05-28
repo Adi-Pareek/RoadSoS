@@ -56,10 +56,7 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun goToDashboard() {
-        startForegroundService(Intent(this, SensorService::class.java))
-        startForegroundService(Intent(this, LocationService::class.java))
         startActivity(Intent(this, DashboardActivity::class.java))
         finish()
     }

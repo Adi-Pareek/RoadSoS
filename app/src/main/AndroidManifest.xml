@@ -17,8 +17,18 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.CALL" />
+        </intent>
+    </queries>
 
     <application
         android:allowBackup="true"
@@ -30,20 +40,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RoadSos">
 
-        <activity android:name=".SettingsActivity" android:exported="false" />
-        <activity android:name=".HistoryActivity" android:exported="false" />
-        <activity android:name=".RegisterActivity" android:exported="false" />
-        <activity
-            android:name=".SOSActivity"
-            android:exported="true"
-            android:showWhenLocked="true"
-            android:turnScreenOn="true" />
-        <activity android:name=".ContactsActivity" android:exported="false" />
-        <activity android:name=".DashboardActivity" android:exported="false" />
-        <activity android:name=".LoginActivity" android:exported="false" />
-        <activity android:name=".MainActivity" android:exported="true" />
-        <activity
-            android:name=".EmergencyMapActivity"/>
+        <!-- Activities -->
         <activity
             android:name=".SplashActivity"
             android:exported="true">
@@ -53,24 +50,78 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="fullSensor" />
+
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".DashboardActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".SOSActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:launchMode="singleTop" />
+
+        <activity
+            android:name=".ContactsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".EmergencyMapActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- Services -->
         <service
             android:name=".service.SensorService"
             android:foregroundServiceType="dataSync"
-            android:exported="false" />
+            android:exported="false"
+            android:stopWithTask="false" />
 
         <service
             android:name=".service.LocationService"
             android:foregroundServiceType="location"
-            android:exported="false" />
+            android:exported="false"
+            android:stopWithTask="false" />
 
+        <!-- Receivers — merged into single declaration -->
         <receiver
             android:name=".receivers.AccidentReceiver"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.roadsafety.roadsos.ACCIDENT_DETECTED"/>
+                <action android:name="com.roadsafety.roadsos.ACCIDENT_DETECTED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
+        <!-- Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="PLACEHOLDER_KEY" />

@@ -3,6 +3,7 @@ package com.roadsafety.roadsos.service
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -13,10 +14,11 @@ import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import com.roadsafety.roadsos.DashboardActivity
+import com.roadsafety.roadsos.SOSActivity
+import com.roadsafety.roadsos.detection.AccidentBroadcaster
 import com.roadsafety.roadsos.detection.AccidentDetector
-import com.roadsafety.roadsos.detection.CrashEvent
 
 class SensorService : Service(), SensorEventListener {
 
@@ -33,7 +35,6 @@ class SensorService : Service(), SensorEventListener {
         return START_STICKY
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
 
@@ -43,6 +44,15 @@ class SensorService : Service(), SensorEventListener {
 
         accidentDetector = AccidentDetector(this@SensorService) { crashEvent ->
             Log.d("ACCIDENT", "🚨 Event fired! G-Force: ${crashEvent.accelerationForce}")
+            val intent = Intent(this@SensorService, SOSActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                putExtra(AccidentBroadcaster.EXTRA_LATITUDE, crashEvent.latitude)
+                putExtra(AccidentBroadcaster.EXTRA_LONGITUDE, crashEvent.longitude)
+                putExtra(AccidentBroadcaster.EXTRA_G_FORCE, crashEvent.accelerationForce)
+            }
+            startActivity(intent)
         }
 
         startForeground(1, buildNotification())
@@ -94,25 +104,37 @@ class SensorService : Service(), SensorEventListener {
         Log.d("SENSOR", "SensorService stopped ❌")
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun buildNotification(): Notification {
         val channelId = "roadsos_sensor"
-        val channel = NotificationChannel(
-            channelId,
-            "RoadSoS Monitoring",
-            NotificationManager.IMPORTANCE_MIN
-        ).apply {
-            setShowBadge(false)
-            setSound(null, null)
-            enableVibration(false)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                "RoadSoS Monitoring",
+                NotificationManager.IMPORTANCE_MIN
+            ).apply {
+                setShowBadge(false)
+                setSound(null, null)
+                enableVibration(false)
+            }
+            getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
-        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, DashboardActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+            },
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
         return NotificationCompat.Builder(this, channelId)
             .setContentTitle("RoadSoS Active")
             .setContentText("Monitoring for accidents...")
             .setSmallIcon(android.R.drawable.ic_dialog_alert)
             .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setContentIntent(pendingIntent)
             .setSilent(true)
             .build()
     }

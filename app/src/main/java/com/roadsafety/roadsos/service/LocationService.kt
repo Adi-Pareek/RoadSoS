@@ -28,7 +28,7 @@ class LocationService : Service() {
         super.onCreate()
         instance = this
 
-        startForeground(2, buildNotification())
+        startForeground(1, buildNotification())
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -49,9 +49,11 @@ class LocationService : Service() {
         startLocationUpdates()
         Log.d("LOCATION", "LocationService started ✅")
     }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return START_STICKY
     }
+
     private fun startLocationUpdates() {
         val request = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY, 1000L
@@ -80,7 +82,6 @@ class LocationService : Service() {
         Log.d("LOCATION", "LocationService stopped ❌")
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun buildNotification(): Notification {
         val channelId = "roadsos_location"
         val channel = NotificationChannel(

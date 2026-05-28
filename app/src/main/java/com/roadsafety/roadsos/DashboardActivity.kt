@@ -76,22 +76,30 @@ class DashboardActivity : AppCompatActivity() {
         val filter = IntentFilter(AccidentBroadcaster.ACTION_ACCIDENT_DETECTED)
         registerReceiver(accidentReceiver, filter, RECEIVER_NOT_EXPORTED)
 
+        // Set switch UI state without triggering listener
+        monitoringSwitch.isChecked = false
+        monitoringStatus.text = "● INACTIVE"
+        monitoringStatus.setTextColor(getColor(R.color.status_danger))
+
         requestLocationPermission()
 
         sosButton.setOnClickListener {
             startActivity(Intent(this, SOSActivity::class.java))
         }
 
-        monitoringSwitch.isChecked = true
-        monitoringStatus.text = "● ACTIVE"
-        monitoringStatus.setTextColor(getColor(R.color.status_safe))
-
         monitoringSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                startServices()
-                monitoringStatus.text = "● ACTIVE"
-                monitoringStatus.setTextColor(getColor(R.color.status_safe))
-                Toast.makeText(this, "Monitoring activated", Toast.LENGTH_SHORT).show()
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                    startServices()
+                    monitoringStatus.text = "● ACTIVE"
+                    monitoringStatus.setTextColor(getColor(R.color.status_safe))
+                    Toast.makeText(this, "Monitoring activated", Toast.LENGTH_SHORT).show()
+                } else {
+                    monitoringSwitch.isChecked = false
+                    Toast.makeText(this, "Location permission required", Toast.LENGTH_SHORT).show()
+                    requestLocationPermission()
+                }
             } else {
                 stopService(Intent(this, SensorService::class.java))
                 stopService(Intent(this, LocationService::class.java))
@@ -146,7 +154,7 @@ class DashboardActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             == PackageManager.PERMISSION_GRANTED) {
             requestBackgroundLocation()
-            startServices()
+            enableMonitoring()
         } else {
             ActivityCompat.requestPermissions(
                 this,
@@ -154,6 +162,13 @@ class DashboardActivity : AppCompatActivity() {
                 LOCATION_PERMISSION_REQUEST
             )
         }
+    }
+
+    private fun enableMonitoring() {
+        startServices()
+        monitoringSwitch.isChecked = true
+        monitoringStatus.text = "● ACTIVE"
+        monitoringStatus.setTextColor(getColor(R.color.status_safe))
     }
 
     private fun requestBackgroundLocation() {
@@ -177,7 +192,7 @@ class DashboardActivity : AppCompatActivity() {
             LOCATION_PERMISSION_REQUEST -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     requestBackgroundLocation()
-                    startServices()
+                    enableMonitoring()
                     requestSmsPermission()
                 } else {
                     Toast.makeText(this, "Location permission required for accident detection", Toast.LENGTH_LONG).show()

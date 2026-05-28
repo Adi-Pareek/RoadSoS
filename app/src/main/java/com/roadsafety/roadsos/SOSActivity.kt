@@ -18,6 +18,7 @@ import androidx.cardview.widget.CardView
 import com.google.android.material.button.MaterialButton
 import com.roadsafety.roadsos.detection.AccidentBroadcaster
 import android.telephony.SmsManager
+import android.util.Log
 import com.roadsafety.roadsos.ContactManager
 
 class SOSActivity : AppCompatActivity() {
@@ -148,96 +149,71 @@ class SOSActivity : AppCompatActivity() {
         }.start()
     }
 
+
+
     private fun activateEmergency() {
-
         isEmergencyActive = true
-
         emergencyOverlay.visibility = View.VISIBLE
+        smsStatus.text = "📍 Getting location..."
 
-        if (
-            crashLat == 0.0 ||
-            crashLng == 0.0
-        ) {
-
-            Toast.makeText(
-                this,
-                "Waiting for live location...",
-                Toast.LENGTH_LONG
-            ).show()
-
-            smsStatus.text =
-                " 📍Getting live location..."
-
-            return
+        // Try LocationService first
+        val locationServiceInstance = com.roadsafety.roadsos.service.LocationService.instance
+        if (crashLat == 0.0 || crashLng == 0.0) {
+            crashLat = locationServiceInstance?.currentLat ?: 0.0
+            crashLng = locationServiceInstance?.currentLng ?: 0.0
         }
 
-        val message =
+        // If still 0, get from FusedLocation
+        if (crashLat == 0.0 || crashLng == 0.0) {
+            val fusedClient = com.google.android.gms.location.LocationServices
+                .getFusedLocationProviderClient(this)
+            try {
+                fusedClient.lastLocation.addOnSuccessListener { location ->
+                    if (location != null) {
+                        crashLat = location.latitude
+                        crashLng = location.longitude
+                    }
+                    sendSos()
+                }.addOnFailureListener {
+                    sendSos()
+                }
+            } catch (e: SecurityException) {
+                sendSos()
+            }
+        } else {
+            sendSos()
+        }
+    }
 
-            "EMERGENCY ALERT\n\n" +
-                    "Possible accident detected.\n\n" +
-                    "Live Location:\n" +
-                    "https://maps.google.com/?q=$crashLat,$crashLng"
+    private fun sendSos() {
+        val message = "EMERGENCY ALERT\n\nPossible accident detected.\n\nLive Location:\nhttps://maps.google.com/?q=$crashLat,$crashLng"
 
         try {
-
-            val contacts =
-                ContactManager.getContacts(this)
-
+            val contacts = ContactManager.getContacts(this)
             if (contacts.isEmpty()) {
-
-                smsStatus.text =
-                    "❌ No emergency contacts"
-
-                Toast.makeText(
-                    this,
-                    "Add emergency contacts first",
-                    Toast.LENGTH_LONG
-                ).show()
-
+                smsStatus.text = "❌ No emergency contacts"
+                Toast.makeText(this, "Add emergency contacts first", Toast.LENGTH_LONG).show()
                 return
             }
 
-            val smsManager =
-                SmsManager.getDefault()
-
+            val smsManager = SmsManager.getDefault()
             for (contact in contacts) {
-
-                smsManager.sendTextMessage(
-                    contact.phone,
-                    null,
-                    message,
-                    null,
-                    null
-                )
+                smsManager.sendTextMessage(contact.phone, null, message, null, null)
             }
-
-            smsStatus.text =
-                "✅ SMS sent to ${contacts.size} contacts"
+            smsStatus.text = "✅ SMS sent to ${contacts.size} contacts"
+            Log.d("SOS", "SMS sent! lat: $crashLat lng: $crashLng")
 
         } catch (e: Exception) {
-
-            smsStatus.text =
-                "❌ SMS failed"
-
-            Toast.makeText(
-                this,
-                e.message,
-                Toast.LENGTH_LONG
-            ).show()
+            smsStatus.text = "❌ SMS failed: ${e.message}"
+            Toast.makeText(this, e.message, Toast.LENGTH_LONG).show()
         }
 
         android.os.Handler(mainLooper).postDelayed({
-
-            locationStatus.text =
-                "✅ Live location shared"
-
+            locationStatus.text = "✅ Live location shared"
         }, 1500)
 
         android.os.Handler(mainLooper).postDelayed({
-
-            alertStatus.text =
-                "✅ Emergency services notified"
-
+            alertStatus.text = "✅ Emergency services notified"
         }, 2500)
     }
     override fun onDestroy() {
