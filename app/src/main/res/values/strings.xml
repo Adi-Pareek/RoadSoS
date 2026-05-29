@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">RoadSoS</string>
+    <string name="sos_button">SOS</string>
+    <string name="monitoring_active">Monitoring Active</string>
+    <string name="monitoring_inactive">Monitoring Inactive</string>
+    <string name="emergency_detected">Possible Accident Detected</string>
+    <string name="are_you_safe">Are you safe?</string>
+    <string name="yes_safe">YES, I\'M SAFE</string>
+    <string name="need_help">NEED HELP</string>
+    <string name="nearby_hospitals">Nearby Hospitals</string>
+    <string name="emergency_contacts">Emergency Contacts</string>
+    <string name="calling_emergency">Calling Emergency Services</string>
+</resources>
