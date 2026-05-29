@@ -12,18 +12,27 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
+<<<<<<< HEAD
 import com.google.firebase.auth.FirebaseAuth
+=======
+import com.roadsafety.roadsos.ContactManager
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
 class ContactsActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var emptyState: LinearLayout
     private lateinit var adapter: ContactsAdapter
+<<<<<<< HEAD
     private var contactList = mutableListOf<Contact>()
 
     // Firebase Connect karne ke liye
     private val firestoreManager = FirestoreManager()
     private val userId = FirebaseAuth.getInstance().currentUser?.uid
+=======
+    private var contactList =
+        mutableListOf<Contact>()
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +42,13 @@ class ContactsActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.contactsRecyclerView)
         emptyState = findViewById(R.id.emptyState)
 
+<<<<<<< HEAD
+=======
+        // Setup RecyclerView
+        contactList.addAll(
+            ContactManager.getContacts(this)
+        )
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
         adapter = ContactsAdapter(contactList) { contact, position ->
             showDeleteDialog(contact, position)
         }
@@ -49,6 +65,7 @@ class ContactsActivity : AppCompatActivity() {
             showAddContactDialog()
         }
 
+<<<<<<< HEAD
         // App khulte hi Firebase se Contacts fetch karna
         fetchContactsFromFirebase()
     }
@@ -72,6 +89,14 @@ class ContactsActivity : AppCompatActivity() {
 
     private fun showAddContactDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_contact, null)
+=======
+        updateEmptyState()
+    }
+
+    private fun showAddContactDialog() {
+        val dialogView = LayoutInflater.from(this)
+            .inflate(R.layout.dialog_add_contact, null)
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
         AlertDialog.Builder(this, R.style.DarkDialog)
             .setTitle("Add Emergency Contact")
@@ -86,13 +111,17 @@ class ContactsActivity : AppCompatActivity() {
                     return@setPositiveButton
                 }
 
+<<<<<<< HEAD
                 // ID me timestamp use kar rahe hain taaki har contact unique ho
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
                 val contact = Contact(
                     id = System.currentTimeMillis().toString(),
                     name = name,
                     phone = phone,
                     relation = relation.ifEmpty { "Contact" }
                 )
+<<<<<<< HEAD
 
                 // 1. UI me turant add karo taaki user ko fast feel ho
                 adapter.addContact(contact)
@@ -108,6 +137,15 @@ class ContactsActivity : AppCompatActivity() {
                         }
                     }
                 }
+=======
+                adapter.addContact(contact)
+                ContactManager.saveContact(
+                    this,
+                    contact
+                )
+                updateEmptyState()
+                Toast.makeText(this, "${name} added", Toast.LENGTH_SHORT).show()
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
             }
             .setNegativeButton("CANCEL", null)
             .show()
@@ -118,6 +156,7 @@ class ContactsActivity : AppCompatActivity() {
             .setTitle("Remove Contact")
             .setMessage("Remove ${contact.name} from emergency contacts?")
             .setPositiveButton("REMOVE") { _, _ ->
+<<<<<<< HEAD
 
                 // 1. UI se turant hatao
                 adapter.removeContact(position)
@@ -133,6 +172,15 @@ class ContactsActivity : AppCompatActivity() {
                         }
                     }
                 }
+=======
+                adapter.removeContact(position)
+                ContactManager.removeContact(
+                    this,
+                    contact.id
+                )
+                updateEmptyState()
+                Toast.makeText(this, "Contact removed", Toast.LENGTH_SHORT).show()
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
             }
             .setNegativeButton("CANCEL", null)
             .show()

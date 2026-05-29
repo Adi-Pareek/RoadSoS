@@ -18,11 +18,17 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.switchmaterial.SwitchMaterial
+<<<<<<< HEAD
 import com.google.firebase.auth.FirebaseAuth
 import com.roadsafety.roadsos.detection.AccidentBroadcaster
 import com.roadsafety.roadsos.service.LocationService
 import com.roadsafety.roadsos.service.SensorService
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+=======
+import com.roadsafety.roadsos.detection.AccidentBroadcaster
+import com.roadsafety.roadsos.service.LocationService
+import com.roadsafety.roadsos.service.SensorService
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -34,6 +40,7 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var historyCard: CardView
     private lateinit var bottomNav: BottomNavigationView
     private lateinit var greetingText: TextView
+<<<<<<< HEAD
     private lateinit var riskScoreText: TextView
     private lateinit var riskRecommendation: TextView
     private lateinit var reasonsContainer: android.widget.LinearLayout
@@ -44,6 +51,11 @@ class DashboardActivity : AppCompatActivity() {
     private val auth = FirebaseAuth.getInstance()
     private val firestoreManager = FirestoreManager()
 
+=======
+
+    private val LOCATION_PERMISSION_REQUEST = 100
+
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
     private val accidentReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val sosIntent = Intent(this@DashboardActivity, SOSActivity::class.java).apply {
@@ -58,6 +70,7 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
+<<<<<<< HEAD
     private val riskReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val score = intent.getIntExtra("RISK_SCORE", 0)
@@ -94,6 +107,8 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,6 +127,7 @@ class DashboardActivity : AppCompatActivity() {
         historyCard = findViewById(R.id.historyCard)
         bottomNav = findViewById(R.id.bottomNav)
         greetingText = findViewById(R.id.greetingText)
+<<<<<<< HEAD
         riskScoreText = findViewById(R.id.riskScoreText)
         riskRecommendation = findViewById(R.id.riskRecommendation)
         reasonsContainer = findViewById(R.id.reasonsContainer)
@@ -119,14 +135,21 @@ class DashboardActivity : AppCompatActivity() {
         // MAGIC: Ab hardcoded "Hello, User" ki jagah Firebase se live data load hoga 👇
         loadDashboardUserData()
 
+=======
+
+        greetingText.text = "Hello, User"
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
         findViewById<TextView>(R.id.profileIcon).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
         val filter = IntentFilter(AccidentBroadcaster.ACTION_ACCIDENT_DETECTED)
         registerReceiver(accidentReceiver, filter, RECEIVER_NOT_EXPORTED)
+<<<<<<< HEAD
         
         LocalBroadcastManager.getInstance(this).registerReceiver(riskReceiver, IntentFilter("ACTION_RISK_UPDATE"))
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
         // Set switch UI state without triggering listener
         monitoringSwitch.isChecked = false
@@ -197,6 +220,7 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
+<<<<<<< HEAD
     // Firebase se User Profile nikal kar Name set karne ka naya function 👇
     private fun loadDashboardUserData() {
         val userId = auth.currentUser?.uid
@@ -219,6 +243,11 @@ class DashboardActivity : AppCompatActivity() {
         super.onDestroy()
         unregisterReceiver(accidentReceiver)
         LocalBroadcastManager.getInstance(this).unregisterReceiver(riskReceiver)
+=======
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(accidentReceiver)
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
     }
 
     private fun requestLocationPermission() {

@@ -1,7 +1,10 @@
 package com.roadsafety.roadsos
 
 import android.os.Bundle
+<<<<<<< HEAD
 import android.util.Log
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -10,16 +13,20 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+<<<<<<< HEAD
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
 class HistoryActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var emptyState: LinearLayout
+<<<<<<< HEAD
     private lateinit var adapter: HistoryAdapter
 
     // Upar ke Stats wale TextBoxes
@@ -30,6 +37,39 @@ class HistoryActivity : AppCompatActivity() {
     private val historyList = mutableListOf<AccidentHistory>()
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
+=======
+
+    // Dummy data — Satish will replace with Firebase data
+    private val historyList = mutableListOf(
+        AccidentHistory(
+            id = "1",
+            date = "22 May 2026",
+            time = "10:45 AM",
+            severity = "Severe",
+            location = "Mumbai Highway, Maharashtra",
+            alertsSent = 3,
+            status = "Resolved"
+        ),
+        AccidentHistory(
+            id = "2",
+            date = "18 May 2026",
+            time = "06:20 PM",
+            severity = "Minor",
+            location = "Pune Road, Maharashtra",
+            alertsSent = 2,
+            status = "Resolved"
+        ),
+        AccidentHistory(
+            id = "3",
+            date = "10 May 2026",
+            time = "02:15 PM",
+            severity = "Medium",
+            location = "Thane, Maharashtra",
+            alertsSent = 2,
+            status = "Active"
+        )
+    )
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +79,7 @@ class HistoryActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.historyRecyclerView)
         emptyState = findViewById(R.id.emptyState)
 
+<<<<<<< HEAD
         // YAHAN APNI XML WALI IDs DALNA (Step 1 wali) 👇
         totalText = findViewById(R.id.totalCount)
         severeText = findViewById(R.id.severeCount)
@@ -51,10 +92,19 @@ class HistoryActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.backButton).setOnClickListener { finish() }
 
         // Clear All Button Update
+=======
+        // Back button
+        findViewById<TextView>(R.id.backButton).setOnClickListener {
+            finish()
+        }
+
+        // Clear all button
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
         findViewById<TextView>(R.id.clearAll).setOnClickListener {
             showClearDialog()
         }
 
+<<<<<<< HEAD
         fetchHistoryFromFirebase()
     }
 
@@ -102,6 +152,30 @@ class HistoryActivity : AppCompatActivity() {
         severeText.text = historyList.count { it.severity.equals("severe", true) }.toString()
         resolvedText.text = historyList.count { it.status.equals("resolved", true) }.toString()
 
+=======
+        // Setup RecyclerView
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = HistoryAdapter(historyList)
+
+        updateEmptyState()
+    }
+
+    private fun showClearDialog() {
+        AlertDialog.Builder(this, R.style.DarkDialog)
+            .setTitle("Clear History")
+            .setMessage("Are you sure you want to clear all accident history?")
+            .setPositiveButton("CLEAR") { _, _ ->
+                historyList.clear()
+                recyclerView.adapter?.notifyDataSetChanged()
+                updateEmptyState()
+                Toast.makeText(this, "History cleared", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("CANCEL", null)
+            .show()
+    }
+
+    private fun updateEmptyState() {
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
         if (historyList.isEmpty()) {
             emptyState.visibility = View.VISIBLE
             recyclerView.visibility = View.GONE
@@ -110,6 +184,7 @@ class HistoryActivity : AppCompatActivity() {
             recyclerView.visibility = View.VISIBLE
         }
     }
+<<<<<<< HEAD
 
     private fun showClearDialog() {
         AlertDialog.Builder(this, R.style.DarkDialog)
@@ -124,4 +199,6 @@ class HistoryActivity : AppCompatActivity() {
             .setNegativeButton("CANCEL", null)
             .show()
     }
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 }

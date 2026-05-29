@@ -71,6 +71,7 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+<<<<<<< HEAD
             // --- YAHAN TUMHARA ASLI BACKEND CODE HAI ---
 
             // Registration process start karne ke liye Toast dikhao
@@ -114,6 +115,12 @@ class RegisterActivity : AppCompatActivity() {
                     Toast.makeText(this@RegisterActivity, "Registration Failed: $authErrorMessage", Toast.LENGTH_LONG).show()
                 }
             }
+=======
+            // Satish will connect Firebase auth here
+            Toast.makeText(this, "Account created! Please login.", Toast.LENGTH_LONG).show()
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
         }
 
         // Login link

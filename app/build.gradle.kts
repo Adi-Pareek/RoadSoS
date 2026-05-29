@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
+<<<<<<< HEAD
     id("com.google.gms.google-services")
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 }
 
 android {
@@ -69,9 +72,12 @@ dependencies {
     implementation("org.osmdroid:osmdroid-android:6.1.16")
     implementation("com.android.volley:volley:1.2.1")
     implementation("com.google.android.gms:play-services-location:21.0.1")
+<<<<<<< HEAD
     // Firebase ke liye jaruri libraries
     implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 }
