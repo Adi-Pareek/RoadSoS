@@ -120,6 +120,64 @@
 
             </androidx.cardview.widget.CardView>
 
+<<<<<<< HEAD
+            <!-- Real-time Risk Card -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/riskCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/bg_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Real-Time Safety Risk"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"/>
+
+                    <TextView
+                        android:id="@+id/riskScoreText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0%"
+                        android:textColor="@color/status_safe"
+                        android:textSize="36sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="8dp"/>
+                        
+                    <TextView
+                        android:id="@+id/riskRecommendation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Conditions are safe. Drive carefully."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:layout_marginTop="4dp"
+                        android:textAlignment="center"/>
+
+                    <LinearLayout
+                        android:id="@+id/reasonsContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="12dp"
+                        android:gravity="center_horizontal"/>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
             <!-- SOS Button Section -->
             <LinearLayout
                 android:layout_width="match_parent"

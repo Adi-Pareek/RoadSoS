@@ -1,6 +1,14 @@
 package com.roadsafety.roadsos
 
 import android.content.Intent
+<<<<<<< HEAD
+import android.os.Bundle
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
+=======
 import android.os.Build
 import android.os.Bundle
 import android.widget.TextView
@@ -11,6 +19,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.roadsafety.roadsos.service.LocationService
 import com.roadsafety.roadsos.service.SensorService
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
 class LoginActivity : AppCompatActivity() {
 
@@ -45,9 +54,28 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+<<<<<<< HEAD
+            // --- YAHAN MEMBER 4 KA ASLI BACKEND CODE AAYEGA ---
+
+            // 1. FirebaseAuthManager ko bulao
+            val authManager = FirebaseAuthManager()
+
+            // 2. Email aur password check karne ke liye Firebase ko bhejo
+            authManager.loginUser(email, password) { isSuccess, errorMessage ->
+                if (isSuccess) {
+                    // Agar password SAHI hai, toh Dashboard par bhejo
+                    Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show()
+                    goToDashboard()
+                } else {
+                    // Agar password GALAT hai, toh error dikhao aur yahin rok lo
+                    Toast.makeText(this, "Login Failed: $errorMessage", Toast.LENGTH_LONG).show()
+                }
+            }
+=======
             // For now go straight to Dashboard
             // Firebase login will be added by Satish
             goToDashboard()
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
         }
 
         // Register link click

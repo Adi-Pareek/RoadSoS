@@ -19,6 +19,11 @@ import com.roadsafety.roadsos.DashboardActivity
 import com.roadsafety.roadsos.SOSActivity
 import com.roadsafety.roadsos.detection.AccidentBroadcaster
 import com.roadsafety.roadsos.detection.AccidentDetector
+<<<<<<< HEAD
+import com.roadsafety.roadsos.ml.RiskEngine
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
 class SensorService : Service(), SensorEventListener {
 
@@ -26,10 +31,18 @@ class SensorService : Service(), SensorEventListener {
     private var accelerometer: Sensor? = null
     private var gyroscope: Sensor? = null
     private lateinit var accidentDetector: AccidentDetector
+<<<<<<< HEAD
+    private lateinit var riskEngine: RiskEngine
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
     private var gyroX = 0f
     private var gyroY = 0f
     private var gyroZ = 0f
+<<<<<<< HEAD
+    private var lastRiskUpdate = 0L
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return START_STICKY
@@ -42,6 +55,11 @@ class SensorService : Service(), SensorEventListener {
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 
+<<<<<<< HEAD
+        riskEngine = RiskEngine(this)
+
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
         accidentDetector = AccidentDetector(this@SensorService) { crashEvent ->
             Log.d("ACCIDENT", "🚨 Event fired! G-Force: ${crashEvent.accelerationForce}")
             val intent = Intent(this@SensorService, SOSActivity::class.java).apply {
@@ -90,6 +108,28 @@ class SensorService : Service(), SensorEventListener {
                     location?.currentLat ?: 0.0,
                     location?.currentLng ?: 0.0
                 )
+<<<<<<< HEAD
+
+                // Continuous Risk Monitoring
+                val now = System.currentTimeMillis()
+                if (now - lastRiskUpdate > 2000) {
+                    val riskResult = riskEngine.predictRisk(
+                        location?.currentLat ?: 0.0,
+                        location?.currentLng ?: 0.0,
+                        gForce,
+                        gyroMagnitude,
+                        location?.currentSpeed ?: 0f
+                    )
+                    
+                    val riskIntent = Intent("ACTION_RISK_UPDATE")
+                    riskIntent.putExtra("RISK_SCORE", riskResult.score)
+                    riskIntent.putStringArrayListExtra("RISK_REASONS", java.util.ArrayList(riskResult.reasons))
+                    LocalBroadcastManager.getInstance(this@SensorService).sendBroadcast(riskIntent)
+                    
+                    lastRiskUpdate = now
+                }
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
             }
         }
     }

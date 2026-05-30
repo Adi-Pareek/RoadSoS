@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Gradle files
 .gradle/
 build/
@@ -31,4 +32,39 @@ render.experimental.xml
 google-services.json
 
 # Android Profiling
+=======
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file
+local.properties
+
+# Log/OS Files
+*.log
+
+# Android Studio generated files and folders
+captures/
+.externalNativeBuild/
+.cxx/
+*.aab
+*.apk
+output-metadata.json
+
+# IntelliJ
+*.iml
+.idea/
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+# Keystore files
+*.jks
+*.keystore
+
+# Google Services
+google-services.json
+
+# Android Profiling
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 *.hprof

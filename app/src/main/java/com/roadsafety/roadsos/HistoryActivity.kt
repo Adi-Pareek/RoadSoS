@@ -1,6 +1,10 @@
 package com.roadsafety.roadsos
 
 import android.os.Bundle
+<<<<<<< HEAD
+import android.util.Log
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -9,11 +13,31 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+<<<<<<< HEAD
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
 class HistoryActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var emptyState: LinearLayout
+<<<<<<< HEAD
+    private lateinit var adapter: HistoryAdapter
+
+    // Upar ke Stats wale TextBoxes
+    private lateinit var totalText: TextView
+    private lateinit var severeText: TextView
+    private lateinit var resolvedText: TextView
+
+    private val historyList = mutableListOf<AccidentHistory>()
+    private val auth = FirebaseAuth.getInstance()
+    private val db = FirebaseFirestore.getInstance()
+=======
 
     // Dummy data — Satish will replace with Firebase data
     private val historyList = mutableListOf(
@@ -45,6 +69,7 @@ class HistoryActivity : AppCompatActivity() {
             status = "Active"
         )
     )
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,16 +79,80 @@ class HistoryActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.historyRecyclerView)
         emptyState = findViewById(R.id.emptyState)
 
+<<<<<<< HEAD
+        // YAHAN APNI XML WALI IDs DALNA (Step 1 wali) 👇
+        totalText = findViewById(R.id.totalCount)
+        severeText = findViewById(R.id.severeCount)
+        resolvedText = findViewById(R.id.resolvedCount)
+
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        adapter = HistoryAdapter(historyList)
+        recyclerView.adapter = adapter
+
+        findViewById<TextView>(R.id.backButton).setOnClickListener { finish() }
+
+        // Clear All Button Update
+=======
         // Back button
         findViewById<TextView>(R.id.backButton).setOnClickListener {
             finish()
         }
 
         // Clear all button
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
         findViewById<TextView>(R.id.clearAll).setOnClickListener {
             showClearDialog()
         }
 
+<<<<<<< HEAD
+        fetchHistoryFromFirebase()
+    }
+
+    private fun fetchHistoryFromFirebase() {
+        val userId = auth.currentUser?.uid
+        if (userId == null) return
+
+        db.collection("Users").document(userId).collection("AccidentHistory")
+            .get()
+            .addOnSuccessListener { documents ->
+                historyList.clear()
+
+                for (document in documents) {
+                    val timestamp = document.getLong("timestamp") ?: 0L
+                    val severity = document.getString("severity") ?: "Unknown"
+                    val lat = document.getDouble("latitude") ?: 0.0
+                    val lng = document.getDouble("longitude") ?: 0.0
+
+                    val dateObj = Date(timestamp)
+                    val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(dateObj)
+                    val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(dateObj)
+
+                    historyList.add(AccidentHistory(
+                        id = document.id,
+                        date = dateFormat,
+                        time = timeFormat,
+                        severity = severity,
+                        location = "Lat: $lat, Lng: $lng",
+                        alertsSent = 3,
+                        status = "Active"
+                    ))
+                }
+
+                adapter.notifyDataSetChanged()
+                updateUIState() // Data aane ke baad dabbe update honge
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to load history", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun updateUIState() {
+        // Dabbe me number database se gin kar aayenge
+        totalText.text = historyList.size.toString()
+        severeText.text = historyList.count { it.severity.equals("severe", true) }.toString()
+        resolvedText.text = historyList.count { it.status.equals("resolved", true) }.toString()
+
+=======
         // Setup RecyclerView
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = HistoryAdapter(historyList)
@@ -86,6 +175,7 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     private fun updateEmptyState() {
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
         if (historyList.isEmpty()) {
             emptyState.visibility = View.VISIBLE
             recyclerView.visibility = View.GONE
@@ -94,4 +184,21 @@ class HistoryActivity : AppCompatActivity() {
             recyclerView.visibility = View.VISIBLE
         }
     }
+<<<<<<< HEAD
+
+    private fun showClearDialog() {
+        AlertDialog.Builder(this, R.style.DarkDialog)
+            .setTitle("Clear History")
+            .setMessage("Are you sure you want to clear all history from screen?")
+            .setPositiveButton("CLEAR") { _, _ ->
+                historyList.clear()
+                adapter.notifyDataSetChanged()
+                updateUIState() // Clear dabane par sab dabbe '0' ho jayenge
+                Toast.makeText(this, "History cleared", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("CANCEL", null)
+            .show()
+    }
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 }

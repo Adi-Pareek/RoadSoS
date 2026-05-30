@@ -18,9 +18,17 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.switchmaterial.SwitchMaterial
+<<<<<<< HEAD
+import com.google.firebase.auth.FirebaseAuth
 import com.roadsafety.roadsos.detection.AccidentBroadcaster
 import com.roadsafety.roadsos.service.LocationService
 import com.roadsafety.roadsos.service.SensorService
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+=======
+import com.roadsafety.roadsos.detection.AccidentBroadcaster
+import com.roadsafety.roadsos.service.LocationService
+import com.roadsafety.roadsos.service.SensorService
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -32,9 +40,22 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var historyCard: CardView
     private lateinit var bottomNav: BottomNavigationView
     private lateinit var greetingText: TextView
+<<<<<<< HEAD
+    private lateinit var riskScoreText: TextView
+    private lateinit var riskRecommendation: TextView
+    private lateinit var reasonsContainer: android.widget.LinearLayout
 
     private val LOCATION_PERMISSION_REQUEST = 100
 
+    // Naye Firebase Managers Add Kiye Hain 👇
+    private val auth = FirebaseAuth.getInstance()
+    private val firestoreManager = FirestoreManager()
+
+=======
+
+    private val LOCATION_PERMISSION_REQUEST = 100
+
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
     private val accidentReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val sosIntent = Intent(this@DashboardActivity, SOSActivity::class.java).apply {
@@ -49,6 +70,45 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
+<<<<<<< HEAD
+    private val riskReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val score = intent.getIntExtra("RISK_SCORE", 0)
+            val reasons = intent.getStringArrayListExtra("RISK_REASONS") ?: arrayListOf()
+
+            riskScoreText.text = "$score%"
+            
+            when {
+                score < 30 -> {
+                    riskScoreText.setTextColor(getColor(R.color.status_safe))
+                    riskRecommendation.text = "Low risk. Conditions are safe."
+                }
+                score < 60 -> {
+                    riskScoreText.setTextColor(getColor(R.color.status_warning))
+                    riskRecommendation.text = "Moderate risk. Stay alert."
+                }
+                else -> {
+                    riskScoreText.setTextColor(getColor(R.color.status_danger))
+                    riskRecommendation.text = "High risk detected! Drive carefully."
+                }
+            }
+
+            reasonsContainer.removeAllViews()
+            for (reason in reasons) {
+                val tv = TextView(this@DashboardActivity).apply {
+                    text = "• $reason"
+                    setTextColor(getColor(R.color.text_secondary))
+                    textSize = 12f
+                    setPadding(0, 2, 0, 2)
+                    textAlignment = android.view.View.TEXT_ALIGNMENT_CENTER
+                }
+                reasonsContainer.addView(tv)
+            }
+        }
+    }
+
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,14 +127,29 @@ class DashboardActivity : AppCompatActivity() {
         historyCard = findViewById(R.id.historyCard)
         bottomNav = findViewById(R.id.bottomNav)
         greetingText = findViewById(R.id.greetingText)
+<<<<<<< HEAD
+        riskScoreText = findViewById(R.id.riskScoreText)
+        riskRecommendation = findViewById(R.id.riskRecommendation)
+        reasonsContainer = findViewById(R.id.reasonsContainer)
+
+        // MAGIC: Ab hardcoded "Hello, User" ki jagah Firebase se live data load hoga 👇
+        loadDashboardUserData()
+
+=======
 
         greetingText.text = "Hello, User"
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
         findViewById<TextView>(R.id.profileIcon).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
         val filter = IntentFilter(AccidentBroadcaster.ACTION_ACCIDENT_DETECTED)
         registerReceiver(accidentReceiver, filter, RECEIVER_NOT_EXPORTED)
+<<<<<<< HEAD
+        
+        LocalBroadcastManager.getInstance(this).registerReceiver(riskReceiver, IntentFilter("ACTION_RISK_UPDATE"))
+=======
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
 
         // Set switch UI state without triggering listener
         monitoringSwitch.isChecked = false
@@ -145,9 +220,34 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
+<<<<<<< HEAD
+    // Firebase se User Profile nikal kar Name set karne ka naya function 👇
+    private fun loadDashboardUserData() {
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            greetingText.text = "Hello, User"
+            return
+        }
+
+        firestoreManager.getUserProfile(userId) { userModel, error ->
+            if (userModel != null) {
+                // Database se registration wala name mil gaya!
+                greetingText.text = "Hello, ${userModel.name}"
+            } else {
+                greetingText.text = "Hello, User"
+            }
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(accidentReceiver)
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(riskReceiver)
+=======
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(accidentReceiver)
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
     }
 
     private fun requestLocationPermission() {

@@ -71,10 +71,56 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+<<<<<<< HEAD
+            // --- YAHAN TUMHARA ASLI BACKEND CODE HAI ---
+
+            // Registration process start karne ke liye Toast dikhao
+            Toast.makeText(this, "Registering... Please wait", Toast.LENGTH_SHORT).show()
+
+            val authManager = FirebaseAuthManager()
+
+            // 1. Firebase mein account banao
+            authManager.registerUser(email, password) { isAuthSuccess, authErrorMessage ->
+                if (isAuthSuccess) {
+
+                    // 2. Account ban gaya, ab uski nayi ID nikaalo
+                    val userId = authManager.getCurrentUserId() ?: ""
+
+                    // 3. User ke form wale details (Name, Phone) UserModel mein dalo
+                    val newUser = UserModel(
+                        userId = userId,
+                        name = name,
+                        phone = phone,
+                        bloodGroup = "", // Ise user baad mein profile settings me update karega
+                        emergencyContacts = emptyList()
+                    )
+
+                    // 4. Firestore Database mein saara data save karo
+                    val firestoreManager = FirestoreManager()
+                    firestoreManager.saveUserProfile(newUser) { isDbSuccess, dbErrorMessage ->
+                        if (isDbSuccess) {
+                            // Sab kuch 100% success ho gaya!
+                            // Fix: popup ko gayab hone se bachane ke liye applicationContext use kiya hai
+                            Toast.makeText(applicationContext, "Registration Successful! Please login.", Toast.LENGTH_LONG).show()
+                            startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))
+                            finish()
+                        } else {
+                            // Database error
+                            Toast.makeText(this@RegisterActivity, "Database Error: $dbErrorMessage", Toast.LENGTH_LONG).show()
+                        }
+                    }
+
+                } else {
+                    // Registration error (jaise email pehle se use mein hai)
+                    Toast.makeText(this@RegisterActivity, "Registration Failed: $authErrorMessage", Toast.LENGTH_LONG).show()
+                }
+            }
+=======
             // Satish will connect Firebase auth here
             Toast.makeText(this, "Account created! Please login.", Toast.LENGTH_LONG).show()
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
+>>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
         }
 
         // Login link
