@@ -107,8 +107,30 @@
                         android:inputType="phone"
                         android:textColor="@color/text_primary"
                         android:maxLines="1"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/bloodGroupLayout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Blood Group"
+                    android:layout_marginBottom="16dp"
+                    app:boxStrokeColor="@color/emergency_red"
+                    app:hintTextColor="@color/text_secondary"
+                    app:boxBackgroundColor="@color/bg_input">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/bloodGroupInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:textColor="@color/text_primary"
+                        android:maxLines="1"/>
 
                 </com.google.android.material.textfield.TextInputLayout>
+
+
 
                 <!-- Email -->
                 <com.google.android.material.textfield.TextInputLayout

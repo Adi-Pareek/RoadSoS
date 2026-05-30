@@ -144,25 +144,33 @@ class RiskEngine(private val context: Context) {
         var sensorRisk = 0.0
         var sensorReason = ""
         val speedKmh = speed * 3.6f // Convert m/s to km/h
-        
-        if (gForce > 2.0f) {
-            sensorRisk = 90.0
-            sensorReason = "Sudden braking or acceleration detected"
-        } else if (gyroMag > 4.0f) {
-            sensorRisk = 80.0
-            sensorReason = "Unstable device motion detected"
-        } else if (speedKmh > 80f) {
-            sensorRisk = 85.0
-            sensorReason = "High speed detected (${speedKmh.toInt()} km/h)"
-        } else if (speedKmh > 40f) {
-            sensorRisk = 40.0
+
+        if (speedKmh < 10f) {
+
+            sensorRisk = 5.0
+            sensorReason = "Vehicle stationary"
+
         } else {
-            sensorRisk = 10.0
+
+            if (gForce > 2.0f) {
+                sensorRisk = 90.0
+                sensorReason = "Sudden braking or acceleration detected"
+            } else if (gyroMag > 4.0f) {
+                sensorRisk = 80.0
+                sensorReason = "Unstable device motion detected"
+            } else if (speedKmh > 80f) {
+                sensorRisk = 85.0
+                sensorReason = "High speed detected (${speedKmh.toInt()} km/h)"
+            } else if (speedKmh > 40f) {
+                sensorRisk = 40.0
+            } else {
+                sensorRisk = 10.0
+            }
         }
 
         // --- Contextual Overrides & Stationary Check ---
         // A user stationary at home (speed < 3 km/h and stable sensors) has minimal accident risk
-        val isStationary = speedKmh < 3.0f && gForce < 1.2f && gyroMag < 1.0f
+        val isStationary = speedKmh < 8.0f && gForce < 1.5f && gyroMag < 2.0f
 
         // Re-calibrated Hybrid Scoring System
         val geoContribution = 0.45 * geographicRisk
@@ -176,7 +184,7 @@ class RiskEngine(private val context: Context) {
 
         if (isStationary) {
             // Suppress the risk heavily if the user is stationary
-            rawFinalScore *= 0.15 // 85% risk reduction
+            rawFinalScore = minOf(rawFinalScore * 0.10, 5.0) // 85% risk reduction
             reasons.add("Stationary or parked. Risk is minimal.")
             if (geographicRisk > 50) {
                 reasons.add("Parked in a high-risk zone (+${(rawFinalScore * 0.45).toInt()})")
@@ -209,14 +217,8 @@ class RiskEngine(private val context: Context) {
         }
 
         // --- Exponential Moving Average (EMA) Smoothing ---
-        if (smoothedScore < 0) {
-            smoothedScore = rawFinalScore
-        } else {
-            // Smooth out sudden spikes/drops (30% new, 70% old)
-            smoothedScore = (0.3 * rawFinalScore) + (0.7 * smoothedScore)
-        }
-
-        val finalScoreInt = smoothedScore.toInt().coerceIn(0, 100)
+        val finalScoreInt =
+            rawFinalScore.toInt().coerceIn(0, 100)
         return RiskResult(finalScoreInt, reasons)
     }
 }

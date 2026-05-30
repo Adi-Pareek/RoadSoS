@@ -22,7 +22,9 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var profileName: TextView
     private lateinit var profileEmail: TextView
     private lateinit var profilePhone: TextView
+    private lateinit var profileAvatar: TextView
 
+    private lateinit var profileBloodGroup: TextView
     // Firebase Managers
     private val auth = FirebaseAuth.getInstance()
     private val firestoreManager = FirestoreManager()
@@ -40,7 +42,8 @@ class SettingsActivity : AppCompatActivity() {
         profileName = findViewById(R.id.profileName)   // Jahan 'User Name' show hota hai
         profileEmail = findViewById(R.id.profileEmail) // Jahan email show hota hai
         profilePhone = findViewById(R.id.profilePhone) // Jahan phone number show hota hai
-
+        profileAvatar = findViewById(R.id.profileAvatar)
+        profileBloodGroup = findViewById(R.id.profileBloodGroup)
         // 2. Screen khulte hi Firebase se live data load karo
         loadUserProfileData()
 
@@ -54,7 +57,7 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.editProfile).setOnClickListener {
             fetchAndShowEditProfileDialog()
 
-            Toast.makeText(this, "Edit profile — Satish connecting Firebase", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Editing  profile", Toast.LENGTH_SHORT).show()
 
         }
 
@@ -89,16 +92,33 @@ class SettingsActivity : AppCompatActivity() {
 
         if (userId == null) return
 
-        // Email direct Firebase Authentication se mil jata hai
+        // Email from Firebase Auth
         profileEmail.text = email ?: "No Email Found"
 
-        // Name aur Phone ke liye Firestore se data fetch karenge
         firestoreManager.getUserProfile(userId) { userModel, error ->
+
             if (userModel != null) {
+
                 profileName.text = userModel.name
                 profilePhone.text = userModel.phone
+                profileBloodGroup.text = "Blood Group: ${userModel.bloodGroup}"
+
+                // Dynamic Avatar Letter
+                val firstLetter = userModel.name
+                    .trim()
+                    .first()
+                    .uppercaseChar()
+                    .toString()
+
+                profileAvatar.text = firstLetter
+
             } else {
-                Toast.makeText(this, "Profile data load karne me error: $error", Toast.LENGTH_SHORT).show()
+
+                Toast.makeText(
+                    this,
+                    "Profile data load karne me error: $error",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -173,11 +193,25 @@ class SettingsActivity : AppCompatActivity() {
 
                 firestoreManager.saveUserProfile(updatedUser) { success, saveError ->
                     if (success) {
-                        Toast.makeText(this, "Profile successfully updated!", Toast.LENGTH_LONG).show()
 
-                        // MAGIC: Save hote hi screen ke text ko bhi instantly update kar do bina refresh kiye
+                        Toast.makeText(
+                            this,
+                            "Profile successfully updated!",
+                            Toast.LENGTH_LONG
+                        ).show()
+
                         profileName.text = updatedName
                         profilePhone.text = updatedPhone
+                        profileBloodGroup.text = "Blood Group: $updatedBlood"
+
+                        profileAvatar.text =
+                            updatedName
+                                .trim()
+                                .first()
+                                .uppercaseChar()
+                                .toString()
+
+
                     } else {
                         Toast.makeText(this, "Update failed: $saveError", Toast.LENGTH_LONG).show()
                     }

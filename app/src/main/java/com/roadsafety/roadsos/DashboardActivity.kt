@@ -23,6 +23,8 @@ import com.roadsafety.roadsos.detection.AccidentBroadcaster
 import com.roadsafety.roadsos.service.LocationService
 import com.roadsafety.roadsos.service.SensorService
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import android.net.Uri
+import androidx.appcompat.app.AlertDialog
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -43,7 +45,27 @@ class DashboardActivity : AppCompatActivity() {
     // Naye Firebase Managers Add Kiye Hain 👇
     private val auth = FirebaseAuth.getInstance()
     private val firestoreManager = FirestoreManager()
+    private fun showBackgroundLocationDialog() {
 
+        AlertDialog.Builder(this)
+            .setTitle("Background Location Required")
+            .setMessage(
+                "RoadSoS needs 'Allow all the time' location access to detect accidents even when the app is minimized and to share your live location during emergencies."
+            )
+            .setCancelable(false)
+            .setPositiveButton("Open Settings") { _, _ ->
+
+                val intent = Intent(
+                    android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                )
+
+                intent.data = Uri.parse("package:$packageName")
+
+                startActivity(intent)
+            }
+            .setNegativeButton("Later", null)
+            .show()
+    }
 
 
 
@@ -98,16 +120,32 @@ class DashboardActivity : AppCompatActivity() {
             }
         }
     }
+    private fun requestNotificationPermission() {
 
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.POST_NOTIFICATIONS
+                ),
+                102
+            )
+        }
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
         supportActionBar?.hide()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 102)
-        }
+
 
         sosButton = findViewById(R.id.sosButton)
         monitoringSwitch = findViewById(R.id.monitoringSwitch)
@@ -142,8 +180,7 @@ class DashboardActivity : AppCompatActivity() {
         monitoringSwitch.isChecked = false
         monitoringStatus.text = "● INACTIVE"
         monitoringStatus.setTextColor(getColor(R.color.status_danger))
-
-        requestLocationPermission()
+        requestSmsPermission()
 
         sosButton.setOnClickListener {
             startActivity(Intent(this, SOSActivity::class.java))
@@ -220,6 +257,17 @@ class DashboardActivity : AppCompatActivity() {
             if (userModel != null) {
                 // Database se registration wala name mil gaya!
                 greetingText.text = "Hello, ${userModel.name}"
+
+                val firstLetter =
+                    userModel.name
+                        .trim()
+                        .first()
+                        .uppercaseChar()
+                        .toString()
+
+                findViewById<TextView>(
+                    R.id.profileIcon
+                ).text = firstLetter
             } else {
                 greetingText.text = "Hello, User"
             }
@@ -255,40 +303,126 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun requestBackgroundLocation() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION), 101)
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ),
+                101
+            )
+
+        } else {
+
+            enableMonitoring()
         }
     }
-
     private fun requestSmsPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
             != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.SEND_SMS), 103)
         }
+        Toast.makeText(
+            this,
+            "Requesting SMS Permission",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
-            LOCATION_PERMISSION_REQUEST -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    requestBackgroundLocation()
-                    enableMonitoring()
-                    requestSmsPermission()
+
+            103 -> { // SMS
+
+                if (
+                    grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+                ) {
+
+                    requestLocationPermission()
+
                 } else {
-                    Toast.makeText(this, "Location permission required for accident detection", Toast.LENGTH_LONG).show()
+
+                    Toast.makeText(
+                        this,
+                        "SMS permission required for emergency alerts",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+
+            LOCATION_PERMISSION_REQUEST -> {
+
+                if (
+                    grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+                ) {
+
+                    AlertDialog.Builder(this)
+                        .setTitle("Background Location Required")
+                        .setMessage(
+                            "RoadSoS needs 'Allow all the time' location access for accident detection even when the app is minimized and to share your live location during emergencies."
+                        )
+                        .setCancelable(false)
+                        .setPositiveButton("Continue") { _, _ ->
+
+                            requestBackgroundLocation()
+
+                        }
+                        .setNegativeButton("Later", null)
+                        .show()
+
+                } else {
+
+                    Toast.makeText(
+                        this,
+                        "Location permission required",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
             101 -> {
-                val msg = if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                    "24/7 monitoring enabled!" else "Background location denied. Keep app open for monitoring."
-                Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+
+                if (
+                    grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+                ) {
+
+                    enableMonitoring()
+
+                } else {
+
+                    Toast.makeText(
+                        this,
+                        "Background location permission is required for 24/7 accident monitoring",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
     }
+    override fun onResume() {
+        super.onResume()
 
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+
+            enableMonitoring()
+        }
+    }
     private fun startServices() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(Intent(this, SensorService::class.java))

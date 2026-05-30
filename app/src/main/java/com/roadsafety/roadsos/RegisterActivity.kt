@@ -18,6 +18,8 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var registerButton: MaterialButton
     private lateinit var loginLink: TextView
 
+    private lateinit var bloodGroupInput: TextInputEditText
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
@@ -31,6 +33,7 @@ class RegisterActivity : AppCompatActivity() {
         confirmPasswordInput = findViewById(R.id.confirmPasswordInput)
         registerButton = findViewById(R.id.registerButton)
         loginLink = findViewById(R.id.loginLink)
+        bloodGroupInput = findViewById(R.id.bloodGroupInput)
 
         // Back button
         findViewById<TextView>(R.id.backButton).setOnClickListener {
@@ -41,9 +44,11 @@ class RegisterActivity : AppCompatActivity() {
         registerButton.setOnClickListener {
             val name = nameInput.text.toString().trim()
             val phone = phoneInput.text.toString().trim()
+            val bloodGroup = bloodGroupInput.text.toString().trim()
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
             val confirmPassword = confirmPasswordInput.text.toString().trim()
+
 
             // Validation
             if (name.isEmpty()) {
@@ -53,6 +58,11 @@ class RegisterActivity : AppCompatActivity() {
             if (phone.isEmpty()) {
                 phoneInput.error = "Enter phone number"
                 return@setOnClickListener
+
+                if (bloodGroup.isEmpty()) {
+                    bloodGroupInput.error = "Enter blood group"
+                    return@setOnClickListener
+                }
             }
             if (email.isEmpty()) {
                 emailInput.error = "Enter email"
@@ -91,7 +101,7 @@ class RegisterActivity : AppCompatActivity() {
                         userId = userId,
                         name = name,
                         phone = phone,
-                        bloodGroup = "", // Ise user baad mein profile settings me update karega
+                        bloodGroup = bloodGroup,
                         emergencyContacts = emptyList()
                     )
 
