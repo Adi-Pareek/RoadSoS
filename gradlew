@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 #!/bin/sh
 
 #
@@ -250,7 +250,7 @@ eval "set -- $(
     )" '"$@"'
 
 exec "$JAVACMD" "$@"
-=======
+
 #!/bin/sh
 
 #
@@ -502,4 +502,4 @@ eval "set -- $(
     )" '"$@"'
 
 exec "$JAVACMD" "$@"
->>>>>>> ca394ebcc234837c355ae690eb7e61058ba164c3
+
